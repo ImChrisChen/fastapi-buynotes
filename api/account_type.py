@@ -1,46 +1,36 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import Optional
-from enum import Enum
 
 from db.database import session
 from db import models
+from db.schemas.account_type import CreateAccountType, UpdateAccountType
 
-router = APIRouter(tags=['帐单类型'])
-
-
-class AmountType(str, Enum):
-    Negative = "0"
-    Positive = "1"
-
-
-class CreateAccountType(BaseModel):
-    amount_type: AmountType
-    type_zh_name: str
-    type_en_name: Optional[str]
+router = APIRouter(
+    tags=['帐单类型'],
+    prefix='/account_type',
+    responses={403: {"description": "Operation forbidden"}},
+)
 
 
-class UpdateAccountType(BaseModel):
-    # amount_type: Optional[AmountType]
-    # type_zh_name: Optional[str]
-    # type_en_name: Optional[str]
-    type_zh_name: str
-
-
-@router.get('/account_types')
+@router.get('/')
 async def get_account_types():
     types = session.query(models.AccountType).all()
     session.close()
     return types
 
 
-@router.get('/account_type/{type_id}')
+@router.get('/{type_id}')
 async def get_account_type(type_id: int):
-    t = session.get(models.AccountType, type_id)
-    return t
+    item = session.query(models.AccountType).filter(models.AccountType.id == type_id)
+    if item.first() is None:
+        return {
+            'code': -1,
+            'msg': '数据不存在'
+        }
+        pass
+    return item.first()
 
 
-@router.post('/account_type')
+@router.post('/')
 async def create_account_type(account_type: CreateAccountType):
     # NOTE created_at 会变成null, 在sql中写入则不会
     item = models.AccountType(**account_type.dict())
@@ -50,28 +40,54 @@ async def create_account_type(account_type: CreateAccountType):
     return item
 
 
-@router.put('/account_type/{type_id}')
+@router.put('/{type_id}')
 async def update_account_type(type_id: int, account_type: UpdateAccountType):
-    t = session.get(models.AccountType, type_id)
-    return t
-    # for k, v in account_type.dict().items():
-    #     if k is not None and v is not None:
-    #         t[k] = v
-    #
-    # session.flush()
-    # session.commit()
+    item = session.query(models.AccountType).filter(models.AccountType.id == type_id)
 
-
-@router.delete('/account_type/{type_id}')
-async def delete_account_type(type_id: int):
-    session.begin()
-    # session.query(models.AccountType).filter(models.AccountType.id == type_id).delete()
-    t = session.get(models.AccountType, type_id)
-    if t is None:
+    if item.first() is None:
         return {
             'code': -1,
             'msg': '数据不存在'
         }
-    session.delete(t)
+
+    d = account_type.dict()
+
+    for k, v in d.copy().items():
+        if v is None:
+            del d[k]
+
+    resp = item.update(d)
     session.commit()
-    return t
+    if resp is None:
+        return {
+            'code': -1,
+            'msg': '更新失败,或者已经被更新过了'
+        }
+    return {
+        'code': 0,
+        'msg': '更新成功'
+    }
+
+
+@router.delete('/{type_id}')
+async def delete_account_type(type_id: int):
+    item = session.query(models.AccountType).filter(models.AccountType.id == type_id)
+    print(item)
+    if item.first() is None:
+        return {
+            'code': -1,
+            'msg': '数据不存在'
+        }
+        pass
+    res = item.delete()
+    session.flush()
+    session.commit()
+    if not res:
+        return {
+            'code': -1,
+            'msg': '删除失败'
+        }
+    return {
+        'code': 0,
+        'msg': '删除成功'
+    }

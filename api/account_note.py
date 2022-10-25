@@ -1,16 +1,12 @@
-from datetime import datetime
 
 from pydantic import BaseModel
 
-from db.database import session
-
 from fastapi import APIRouter
-from typing import Optional
 
 from db import models
+from db.database import session
 
 router = APIRouter(tags=['帐单记录表'])
-
 
 @router.get("/account_notes")
 async def get_account_notes():

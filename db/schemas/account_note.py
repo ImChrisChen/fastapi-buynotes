@@ -1,0 +1,3 @@
+
+class AccountNote():
+    pass

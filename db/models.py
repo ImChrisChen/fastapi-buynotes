@@ -1,5 +1,5 @@
 from db.database import Base
-from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey, func
 from sqlalchemy.orm import relationship
 
 
@@ -12,6 +12,8 @@ class AccountNote(Base):
     type_id = Column(Integer, ForeignKey('account_type.id'))
     created_at = Column(TIMESTAMP, nullable=True)
     updated_at = Column(TIMESTAMP, nullable=True)
+
+    relationship('AccountType')
 
 
 class AccountType(Base):
