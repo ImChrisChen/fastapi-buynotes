@@ -1,25 +1,13 @@
 FROM python:3.10.6-slim-buster
 WORKDIR /usr/app
 
-COPY ./requirement.txt .
+RUN python -m venv /opt/venv
 
-#RUN python3 -m pip install --upgrade pip
+COPY requirement.txt .
 
-#RUN pip install --upgrade setuptools
+RUN . /opt/venv/bin/activate
 
-#RUN pip install --upgrade pip
-
-#RUN pip install --upgrade setuptools
-
-#RUN python -m pip install --upgrade pip
-
-#RUN apt-get install python-dev
-RUN apt-get install libboost-python-dev
-
-RUN apt-get --version
-#python-dev-is-python3
-
-RUN pip install --no-cache-dir --upgrade -r /usr/app/requirement.txt
+RUN /opt/venv/bin/pip install --no-cache-dir --upgrade -r ./requirement.txt
 
 COPY . .
 

@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-from db.database import session
-from db import models
-from db.schemas.account_type import CreateAccountType, UpdateAccountType
+from src.db.database import session
+from src.db import models
+from src.db.schemas.account_type import CreateAccountType, UpdateAccountType
 
 router = APIRouter(
     tags=['帐单类型'],

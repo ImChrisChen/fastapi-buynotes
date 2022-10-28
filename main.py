@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi import Request, Response, FastAPI
 from fastapi.responses import HTMLResponse
 from starlette.middleware.cors import CORSMiddleware
-import api
+from src import api
 
 app = FastAPI()
 

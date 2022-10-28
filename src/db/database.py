@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
-from starlette.requests import Request
 
 # https://fastapi.tiangolo.com/zh/tutorial/sql-databases/#orms
 
