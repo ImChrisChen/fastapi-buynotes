@@ -1,44 +1,44 @@
-# from pydantic import BaseModel
-#
-# from fastapi import APIRouter
-#
-# from src.db import models
-# from src.db.database import session
-#
-# router = APIRouter(tags=['帐单记录表'])
-#
-#
-# @router.get("/account_notes")
-# async def get_account_notes():
-#     res = session.query(models.AccountNote).all()
-#     return res
-#
-#
-# @router.get("/account_note/{note_id}")
-# async def get_account_note(note_id: int):
-#     res = session.query(models.AccountNote).filter(models.AccountNote.id == note_id).one()
-#     print(res)
-#     return None
-#
-#
-# class CreateAccountType(BaseModel):
-#     amount_type: str
-#     type_zh_name: str
-#     type_en_name: str
-#
-#
-# class CreateAccountNote(BaseModel):
-#     remark: str
-#     amount: int
-#     # type_id: Optional[int] = None
-#
-#
-# @router.post("/account_note")
-# async def create_account_note(note: CreateAccountNote):
-#     # print(note)
-#     # return note
-#     note_item = models.AccountNote(**note.dict())
-#     session.add(note_item)
-#     session.commit()
-#     session.refresh()
-#     return note_item
+from pydantic import BaseModel
+
+from fastapi import APIRouter,Body
+
+from src.db.models import AccountNote
+from src.db.database import session
+from src.db.schemas.account_note import CreateAccountNote
+
+router = APIRouter(
+    tags=['帐单记录'],
+    prefix='/account_note'
+)
+
+
+@router.get("/")
+async def get_account_notes():
+    notes = session.query(AccountNote).all()
+    session.close()
+    return notes
+
+
+@router.get("/{note_id}")
+async def get_account_note(note_id: int):
+    note = session.query(AccountNote).filter(AccountNote.id == note_id).limit(1)
+    if note.first() is None:
+        return {
+            'code': -1,
+            'data': {},
+            'msg': '数据不存在'
+        }
+    return note.first()
+
+
+@router.post("/")
+async def create_account_note(note: CreateAccountNote):
+    note = AccountNote(**note.dict())
+    session.add(note)
+    session.commit()
+    session.refresh(note)
+    return {
+        'code': 0,
+        'data': note,
+        'msg': '创建成功'
+    }
