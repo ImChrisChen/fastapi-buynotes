@@ -15,6 +15,6 @@ class CreateAccountType(BaseModel):
 
 
 class UpdateAccountType(BaseModel):
-    amount_type: Optional[AmountType]
+    # amount_type: Optional[AmountType]
     type_zh_name: Optional[str]
     type_en_name: Optional[str]
