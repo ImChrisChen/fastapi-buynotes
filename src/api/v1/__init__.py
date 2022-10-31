@@ -1,10 +1,7 @@
 from fastapi import APIRouter, Request
 from . import account_type, user, account_note
 
-router = APIRouter(
-    prefix='/v1',
-    tags=['v1版本']
-)
+router = APIRouter(prefix='/v1')
 
 router.include_router(account_type.router)
 router.include_router(account_note.router)

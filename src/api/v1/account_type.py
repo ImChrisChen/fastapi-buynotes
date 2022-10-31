@@ -33,7 +33,9 @@ async def get_account_type(type_id: int):
 @router.post('/')
 async def create_account_type(account_type: CreateAccountType):
     # NOTE created_at 会变成null, 在sql中写入则不会
+    d = account_type.dict()
     item = AccountType(**account_type.dict())
+    print(item)
     session.add(item)
     session.commit()
     session.refresh(item)      # 内存更新,然后返回,不然为{}
@@ -69,6 +71,7 @@ async def update_account_type(type_id: int, account_type: UpdateAccountType):
         }
     return {
         'code': 0,
+        'data': item.one(),
         'msg': '更新成功'
     }
 

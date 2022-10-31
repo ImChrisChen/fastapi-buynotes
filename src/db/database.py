@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker, Session
 # SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
 # SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
 
-engine = create_engine("mysql://root:rootadmin@chrisorz.tpddns.cn:3306/buy_notes")
+engine = create_engine("mysql://root:rootadmin@chrisorz.tpddns.cn:3306/buy_notes", echo=True)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

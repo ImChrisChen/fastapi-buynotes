@@ -1,3 +1,5 @@
+import datetime
+
 from pydantic import BaseModel
 from typing import Optional
 from enum import Enum
@@ -12,6 +14,7 @@ class CreateAccountType(BaseModel):
     amount_type: AmountType
     type_zh_name: str
     type_en_name: Optional[str]
+    # updated_at: Optional[None]
 
 
 class UpdateAccountType(BaseModel):

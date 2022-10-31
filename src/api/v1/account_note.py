@@ -1,6 +1,4 @@
-from pydantic import BaseModel
-
-from fastapi import APIRouter,Body
+from fastapi import APIRouter
 
 from src.db.models import AccountNote
 from src.db.database import session
