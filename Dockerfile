@@ -5,20 +5,19 @@ WORKDIR /usr/app
 
 # Error: sqlalchemy mysql_config not found
 # Solution: https://blog.csdn.net/xc_zhou/article/details/80871374
-RUN apt-get update # 需要更新apt软件包,不然默认的版本找不到 libmariadbd-dev 包
-RUN apt-get install -y libmariadbd-dev
-
-RUN python -m venv venv
+# 需要更新apt软件包,不然默认的版本找不到 libmariadbd-dev 包
+RUN apt-get update \
+    && apt-get install -y libmariadbd-dev
 
 COPY requirement.txt .
 
-RUN . venv/bin/activate
-
-RUN pip install --no-cache-dir --upgrade -r ./requirement.txt
+RUN python -m venv venv  \
+    && . venv/bin/activate \
+    && ./venv/bin/pip install --no-cache-dir --upgrade -r ./requirement.txt
 
 COPY . .
 
-CMD ["python", "main.py"]
+CMD ["./venv/bin/python", "main.py"]
 
 EXPOSE 8000
 
