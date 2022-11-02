@@ -1,5 +1,5 @@
 from src.db.database import Base
-from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey, text
+from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey, text, func
 from sqlalchemy.orm import relationship
 
 
@@ -11,6 +11,7 @@ class AccountType(Base):
     type_en_name = Column(String)
 
     # 默认时间
+    # created_at = Column(TIMESTAMP, nullable=True, server_default=func.now())
     created_at = Column(TIMESTAMP, nullable=True, server_default=text('CURRENT_TIMESTAMP'))
     updated_at = Column(TIMESTAMP, nullable=True, server_default=text('CURRENT_TIMESTAMP'))
 

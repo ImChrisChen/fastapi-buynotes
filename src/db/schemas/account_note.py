@@ -6,9 +6,14 @@ class CreateAccountType(BaseModel):
     type_zh_name: str
     type_en_name: str
 
+    # class Config:
+    #     orm_mode = True
+
 
 class CreateAccountNote(BaseModel):
     remark: str
     amount: int
     type_id: int
-    # type_id: Optional[int] = None
+
+    # class Config:
+    #     orm_mode = True

@@ -12,10 +12,10 @@ router = APIRouter(
 def get_filepath(f):
     timedate = datetime.now().strftime('%Y%m%d_%H%M_%s')
     [filename, suffix] = os.path.splitext(f.filename)
-    filename_fmt = f'{filename}_{timedate}{suffix}'
-    filepath = os.path.join(os.path.abspath('.'), 'static/upload', filename_fmt)
+    filename = f'{filename}_{timedate}{suffix}'
+    filepath = os.path.join(os.path.abspath('.'), 'static/upload', filename)
     print(filepath)
-    return filepath
+    return filepath, filename,
 
 
 @router.post('/')
@@ -27,15 +27,15 @@ async def upload_file(f: UploadFile = File(...)):
         }
         pass
     file_content = f.file.read()
-    print(file_content)
-    filepath = get_filepath(f)
+    filepath, filename = get_filepath(f)
 
     try:
-        with open(filepath, 'w') as new_file:
+        with open(filepath, mode='w', encoding='utf8') as new_file:
             print(new_file)
-            new_file.write(str(file_content))
+            new_file.write(file_content.__str__())
             return {
                 'code': 0,
+                'data': dict(filename=filename),
                 'msg': 'ok'
             }
     except BaseException as e:
@@ -44,4 +44,3 @@ async def upload_file(f: UploadFile = File(...)):
             'error': e,
             'msg': 'fail',
         }
-
