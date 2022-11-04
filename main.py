@@ -69,8 +69,9 @@ async def add_http_middleware(request: Request, call_next):
 @app.get('/')
 async def fastapi_buynotes():
     # raise UnicornException('error')
-    content = '<h1>Hello FastAPI</h1>'
-    return HTMLResponse(content=content, status_code=200)
+    # content = '<h1>Hello FastAPI</h1>'
+    # return HTMLResponse(content=content, status_code=200)
+    return JSONResponse(status_code=200, content=http_response_wrapper(0,{}))
 
 
 if __name__ == '__main__':

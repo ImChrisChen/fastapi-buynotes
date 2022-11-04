@@ -1,6 +1,5 @@
-import logging
-
 from fastapi import APIRouter, HTTPException
+from starlette.responses import JSONResponse
 
 from src.db.models import AccountNote
 from src.db.database import session
@@ -8,14 +7,13 @@ from src.db.schemas.account_note import CreateAccountNote
 
 router = APIRouter(
     tags=['帐单记录'],
-    prefix='/account_note'
+    prefix='/account_note',
 )
 
 
 @router.get("/")
 async def get_account_notes():
     notes = session.query(AccountNote).all()
-    session.close()
     return notes
 
 
@@ -32,21 +30,21 @@ async def get_account_note(note_id: int):
 
 
 @router.post("/")
-async def create_account_note(note: CreateAccountNote):
+async def create_account_note(account_note: CreateAccountNote):
     try:
-        note = AccountNote(**note.dict())
-        session.add(note)
+        session.begin()
+        d = account_note.dict()
+        item = AccountNote(**d)
+        session.add(item)
         session.commit()
-        session.refresh(note)
+        session.refresh(item)
         return {
             'code': 0,
-            'data': note,
+            'data': item,
             'msg': '创建成功'
         }
     except BaseException as e:
         print(e)
-        logging.error('插入失败，回滚数据', e)
-        session.rollback()
         # raise HTTPException(status_code=500, detail=e)
         return {
             'code': -1,
@@ -69,13 +67,19 @@ async def update_account_note(note_id, account_note: CreateAccountNote):
         if v is None:
             del d[k]
 
-    resp = note.update(d)
-    session.commit()
-    if resp is None:
-        return {
-            'code': -1,
-            'msg': '更新失败,或者已经被更新过了'
-        }
+    try:
+        session.begin()
+        resp = note.update(d)
+        session.commit()
+        if resp is None:
+            return {
+                'code': -1,
+                'msg': '更新失败,或者已经被更新过了'
+            }
+    except BaseException as e:
+        session.rollback()
+        print(e)
+        return dict(code=-1, msg='更新异常')
 
     return {
         'code': 0,
@@ -94,10 +98,9 @@ async def delete_account_note(note_id):
         )
 
     try:
+        session.begin()
         res = item.delete()
-        session.flush()
         session.commit()
-
         if not res:
             return dict(
                 code=-1,
@@ -108,6 +111,7 @@ async def delete_account_note(note_id):
             msg='删除成功'
         )
     except BaseException as e:
+        session.rollback()
         return dict(
             code=-1,
             data=e,

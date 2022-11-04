@@ -32,10 +32,9 @@ async def get_account_type(type_id: int):
 
 @router.post('/')
 async def create_account_type(account_type: CreateAccountType):
-    # NOTE created_at 会变成null, 在sql中写入则不会
+    session.begin()
     d = account_type.dict()
-    item = AccountType(**account_type.dict())
-    print(item)
+    item = AccountType(**d)
     session.add(item)
     session.commit()
     session.refresh(item)      # 内存更新,然后返回,不然为{}
@@ -62,8 +61,10 @@ async def update_account_type(type_id: int, account_type: UpdateAccountType):
         if v is None:
             del d[k]
 
+    session.begin()
     resp = item.update(d)
     session.commit()
+
     if resp is None:
         return {
             'code': -1,
@@ -85,10 +86,9 @@ async def delete_account_type(type_id: int):
             'msg': '数据不存在'
         }
         pass
+    session.begin()
     res = item.delete()
-    session.flush()
     session.commit()
-
     if not res:
         return {
             'code': -1,

@@ -3,6 +3,11 @@
 FROM python:3.10.6
 WORKDIR /usr/app
 
+RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list
+RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+RUN cat /etc/apt/sources.list
+RUN apt-get clean
+
 # Error: sqlalchemy mysql_config not found
 # Solution: https://blog.csdn.net/xc_zhou/article/details/80871374
 # 需要更新apt软件包,不然默认的版本找不到 libmariadbd-dev 包
@@ -13,7 +18,7 @@ COPY requirement.txt .
 
 RUN python -m venv venv  \
     && . venv/bin/activate \
-    && ./venv/bin/pip install --no-cache-dir --upgrade -r ./requirement.txt
+    && ./venv/bin/pip install --no-cache-dir --upgrade -r ./requirement.txt -i https://mirrors.aliyun.com/pypi/simple
 
 COPY . .
 
