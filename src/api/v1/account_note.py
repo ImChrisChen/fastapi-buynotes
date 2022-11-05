@@ -44,6 +44,7 @@ async def create_account_note(account_note: CreateAccountNote):
             'msg': '创建成功'
         }
     except BaseException as e:
+        session.rollback()
         print(e)
         # raise HTTPException(status_code=500, detail=e)
         return {
