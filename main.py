@@ -1,6 +1,6 @@
 import uvicorn  # 这里的 app 要和 main:app对应
 from fastapi.staticfiles import StaticFiles
-from fastapi import Request, Response, FastAPI
+from fastapi import Request, Response, FastAPI, Depends, Body, Header
 from fastapi.responses import HTMLResponse
 
 from fastapi.exceptions import RequestValidationError
@@ -13,9 +13,16 @@ from starlette.responses import JSONResponse
 from src import api
 from src.interceptors.exception import UnicornException
 
+
+async def http_request_data(host=Header(...)):
+    print(host)
+    return host
+
+
 app = FastAPI(
     title="fastapi-buynotes",
     version='0.0.1',
+    dependencies=[Depends(http_request_data)]
 )
 
 
@@ -71,7 +78,7 @@ async def fastapi_buynotes():
     # raise UnicornException('error')
     # content = '<h1>Hello FastAPI</h1>'
     # return HTMLResponse(content=content, status_code=200)
-    return JSONResponse(status_code=200, content=http_response_wrapper(0,{}))
+    return JSONResponse(status_code=200, content=http_response_wrapper(0, {}))
 
 
 if __name__ == '__main__':

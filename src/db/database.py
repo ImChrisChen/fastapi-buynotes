@@ -2,12 +2,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 
+from src.config.config import settings
+
 # https://fastapi.tiangolo.com/zh/tutorial/sql-databases/#orms
 
 # SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
 # SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
 
-engine = create_engine("mysql://root:rootadmin@chrisorz.tpddns.cn:3306/buy_notes", echo=True)
+engine = create_engine(f"mysql://{settings.DB_USERNAME}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_DATABASE}", echo=True)
 
 SessionLocal = sessionmaker(autocommit=True, autoflush=True, bind=engine)
 
