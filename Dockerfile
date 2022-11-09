@@ -14,6 +14,21 @@ RUN apt-get clean
 RUN apt-get update \
     && apt-get install -y libmariadbd-dev
 
+# 设置CST时区
+ENV TZ=Asia/Shanghai \
+    DEBIAN_FRONTEND=noninteractive
+RUN apt-get install -y tzdata \
+    && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
+    && echo ${TZ} > /etc/timezone \
+    && dpkg-reconfigure --frontend noninteractive tzdata \
+    && rm -rf /var/lib/apt/lists/*
+
+# 设置apt国内源
+RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list
+RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+RUN cat /etc/apt/sources.list
+RUN apt-get clean
+
 COPY requirement.txt .
 
 RUN python -m venv venv  \
