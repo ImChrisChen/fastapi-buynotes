@@ -2,11 +2,13 @@ from enum import Enum
 from typing import Any
 
 
-class HttpResponseCodeEnum(Enum):
+class ApiCodeEnum(Enum):
     """状态码枚举类"""
 
     OK = (0, '成功')
     ERROR = (-1, '错误')
+    # NOT_EXIST = (10010, '数据不存在')
+
     SERVER_ERR = (500, '服务器异常')
 
     IMAGE_CODE_ERR = (4001, '图形验证码错误')
@@ -40,14 +42,16 @@ class HttpResponseCodeEnum(Enum):
         return self.value[1]
 
 
-class HttpResponse(object):
+class ApiResponseModel:
     code: int
     msg: str
     data: Any = {}
 
-    def __int__(self, status: dict, data: Any):
-        code, msg = status
+    def __init__(self, status: ApiCodeEnum, data=None):
+        if data is None:
+            data = {}
+
+        code, msg = status.value
         self.code = code
         self.msg = msg
         self.data = data
-        # return dict(code=code, msg=msg, data=data)

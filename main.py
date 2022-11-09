@@ -12,7 +12,7 @@ from starlette.responses import JSONResponse
 
 from src import api
 from src.interceptors.exception import UnicornException
-from src.schemas.basic import HttpResponse, HttpResponseCodeEnum
+from src.schemas.basic import ApiResponseModel, ApiCodeEnum
 
 
 async def http_request_data(host=Header(...)):
@@ -76,12 +76,7 @@ async def add_http_middleware(request: Request, call_next):
 
 @app.get('/')
 async def fastapi_buynotes():
-    # raise UnicornException('error')
-    # content = '<h1>Hello FastAPI</h1>'
-    # return HTMLResponse(content=content, status_code=200)
-    # return JSONResponse(status_code=200, content=http_response_wrapper(0, {}))
-    res = HttpResponse(HttpResponseCodeEnum.OK)
-    return res.__dict__
+    return ApiResponseModel(ApiCodeEnum.OK)
 
 
 if __name__ == '__main__':
