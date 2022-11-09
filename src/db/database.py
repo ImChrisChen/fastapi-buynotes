@@ -9,7 +9,9 @@ from src.config.config import settings
 # SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
 # SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
 
-engine = create_engine(f"mysql://{settings.DB_USERNAME}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_DATABASE}", echo=True)
+engine = create_engine(
+    f"mysql://{settings.DB_USERNAME}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_DATABASE}",
+    echo=True)
 
 SessionLocal = sessionmaker(autocommit=True, autoflush=True, bind=engine)
 
@@ -18,12 +20,10 @@ SessionLocal = sessionmaker(autocommit=True, autoflush=True, bind=engine)
 
 Base = declarative_base()
 
-session = SessionLocal()
 
-
-def get_db() -> Session:
-    db = SessionLocal()
+def get_db_session() -> Session:
+    session = SessionLocal()
     try:
-        yield db
+        yield session
     finally:
-        db.close()
+        session.close()

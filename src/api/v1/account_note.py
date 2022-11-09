@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
+from src.db.database import get_db_session
 from src.db.models import AccountNote
-from src.db.database import session
 from src.db.schemas.account_note import CreateAccountNote
 
 router = APIRouter(
@@ -12,13 +13,16 @@ router = APIRouter(
 
 
 @router.get("/")
-async def get_account_notes():
+async def get_account_notes(session: Session = Depends(get_db_session)):
     notes = session.query(AccountNote).all()
     return notes
 
 
 @router.get("/{note_id}")
-async def get_account_note(note_id: int):
+async def get_account_note(
+        note_id: int,
+        session: Session = Depends(get_db_session)
+):
     note = session.query(AccountNote).filter(AccountNote.id == note_id).limit(1)
     if note.first() is None:
         return {
@@ -30,7 +34,10 @@ async def get_account_note(note_id: int):
 
 
 @router.post("/")
-async def create_account_note(account_note: CreateAccountNote):
+async def create_account_note(
+        account_note: CreateAccountNote,
+        session: Session = Depends(get_db_session)
+):
     try:
         session.begin()
         d = account_note.dict()
@@ -56,7 +63,11 @@ async def create_account_note(account_note: CreateAccountNote):
 
 # TODO 这里还有个问题
 @router.put('/{note_id}')
-async def update_account_note(note_id, account_note: CreateAccountNote):
+async def update_account_note(
+        note_id,
+        account_note: CreateAccountNote,
+        session: Session = Depends(get_db_session)
+):
     note = session.query(AccountNote).filter(AccountNote.id == note_id)
     if note.first() is None:
         return dict(
@@ -90,7 +101,10 @@ async def update_account_note(note_id, account_note: CreateAccountNote):
 
 
 @router.delete('/{note_id}')
-async def delete_account_note(note_id):
+async def delete_account_note(
+        note_id,
+        session: Session = Depends(get_db_session)
+):
     item = session.query(AccountNote).filter(AccountNote.id == note_id)
     if item.first() is None:
         return dict(

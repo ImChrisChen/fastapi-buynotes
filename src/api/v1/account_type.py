@@ -1,7 +1,7 @@
-from fastapi import APIRouter
-from fastapi.encoders import jsonable_encoder
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-from src.db.database import session
+from src.db.database import get_db_session
 from src.db.schemas.account_type import CreateAccountType, UpdateAccountType
 from src.db.models import AccountType
 
@@ -11,16 +11,18 @@ router = APIRouter(
     responses={403: {"description": "Operation forbidden"}},
 )
 
-
 @router.get('/')
-async def get_account_types():
+async def get_account_types(session: Session = Depends(get_db_session)):
     items = session.query(AccountType).all()
     session.close()
     return items
 
 
 @router.get('/{type_id}')
-async def get_account_type(type_id: int):
+async def get_account_type(
+        type_id: int,
+        session: Session = Depends(get_db_session)
+):
     item = session.query(AccountType).filter(AccountType.id == type_id)
     if item.first() is None:
         return {
@@ -31,13 +33,16 @@ async def get_account_type(type_id: int):
 
 
 @router.post('/')
-async def create_account_type(account_type: CreateAccountType):
+async def create_account_type(
+        account_type: CreateAccountType,
+        session: Session = Depends(get_db_session)
+):
     session.begin()
     d = account_type.dict()
     item = AccountType(**d)
     session.add(item)
     session.commit()
-    session.refresh(item)      # 内存更新,然后返回,不然为{}
+    session.refresh(item)  # 内存更新,然后返回,不然为{}
     return {
         'code': 0,
         'data': item,
@@ -46,7 +51,11 @@ async def create_account_type(account_type: CreateAccountType):
 
 
 @router.put('/{type_id}')
-async def update_account_type(type_id: int, account_type: UpdateAccountType):
+async def update_account_type(
+        type_id: int,
+        account_type: UpdateAccountType,
+        session: Session = Depends(get_db_session)
+):
     item = session.query(AccountType).filter(AccountType.id == type_id)
 
     if item.first() is None:
@@ -78,7 +87,10 @@ async def update_account_type(type_id: int, account_type: UpdateAccountType):
 
 
 @router.delete('/{type_id}')
-async def delete_account_type(type_id: int):
+async def delete_account_type(
+        type_id: int,
+        session: Session = Depends(get_db_session)
+):
     item = session.query(AccountType).filter(AccountType.id == type_id)
     if item.first() is None:
         return {
