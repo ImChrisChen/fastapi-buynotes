@@ -15,7 +15,7 @@ from src.interceptors.exception import UnicornException
 from src.schemas.basic import ApiResponseModel, ApiCodeEnum
 
 
-async def http_request_data(host=Header(...)):
+async def check_jwt_token(host=Header(...)):
     print(host)
     return host
 
@@ -23,7 +23,7 @@ async def http_request_data(host=Header(...)):
 app = FastAPI(
     title="fastapi-buynotes",
     version='0.0.1',
-    # dependencies=[Depends(http_request_data)]
+    # dependencies=[Depends(check_jwt_token)]
 )
 
 
@@ -48,30 +48,11 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-ResponseCodeMsg = dict(
-    success=(0, "ok"),
-    error=(-1, 'error'),
-)
-
-
-def http_response_wrapper(code: int, data=None, msg: str = 'ok'):
-    if data is None:
-        data = {}
-    return {
-        'code': code,
-        'data': data,
-        'msg': msg,
-    }
-
 
 @app.middleware('http')
 async def add_http_middleware(request: Request, call_next):
     response: Response = await call_next(request)
     return response
-    # if response.status_code == 200:
-    #     code, msg = ResponseCodeMsg['success']
-    #     response = http_response_wrapper(code=code, data={}, msg=msg)
-    # return response
 
 
 @app.get('/')

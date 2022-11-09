@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from src.db.database import get_db_session
 from src.db.schemas.account_type import CreateAccountType, UpdateAccountType
 from src.db.models import AccountType
+from src.schemas.basic import ApiCodeEnum, ApiResponseModel
 
 router = APIRouter(
     tags=['帐单类型'],
@@ -11,11 +12,11 @@ router = APIRouter(
     responses={403: {"description": "Operation forbidden"}},
 )
 
+
 @router.get('/')
 async def get_account_types(session: Session = Depends(get_db_session)):
     items = session.query(AccountType).all()
-    session.close()
-    return items
+    return ApiResponseModel(ApiCodeEnum.OK, items)
 
 
 @router.get('/{type_id}')
@@ -25,11 +26,8 @@ async def get_account_type(
 ):
     item = session.query(AccountType).filter(AccountType.id == type_id)
     if item.first() is None:
-        return {
-            'code': -1,
-            'msg': '数据不存在'
-        }
-    return item.first()
+        return ApiResponseModel(ApiCodeEnum.DATA_NOT_EXIST)
+    return ApiResponseModel(ApiCodeEnum.OK, item.first())
 
 
 @router.post('/')
@@ -37,17 +35,18 @@ async def create_account_type(
         account_type: CreateAccountType,
         session: Session = Depends(get_db_session)
 ):
-    session.begin()
-    d = account_type.dict()
-    item = AccountType(**d)
-    session.add(item)
-    session.commit()
-    session.refresh(item)  # 内存更新,然后返回,不然为{}
-    return {
-        'code': 0,
-        'data': item,
-        'msg': '创建成功'
-    }
+    try:
+        session.begin()
+        d = account_type.dict()
+        item = AccountType(**d)
+        session.add(item)
+        session.commit()
+        session.refresh(item)  # 内存更新,然后返回,不然为{}
+        return ApiResponseModel(ApiCodeEnum.OK, data=item, message='创建成功')
+    except BaseException as e:
+        print(e)
+        session.rollback()
+        return ApiResponseModel(ApiCodeEnum.SERVER_ERR, data=e)
 
 
 @router.put('/{type_id}')
@@ -59,10 +58,7 @@ async def update_account_type(
     item = session.query(AccountType).filter(AccountType.id == type_id)
 
     if item.first() is None:
-        return {
-            'code': -1,
-            'msg': '数据不存在'
-        }
+        return ApiResponseModel(ApiCodeEnum.DATA_NOT_EXIST)
 
     d = account_type.dict()
 
@@ -70,20 +66,17 @@ async def update_account_type(
         if v is None:
             del d[k]
 
-    session.begin()
-    resp = item.update(d)
-    session.commit()
-
-    if resp is None:
-        return {
-            'code': -1,
-            'msg': '更新失败,或者已经被更新过了'
-        }
-    return {
-        'code': 0,
-        'data': item.one(),
-        'msg': '更新成功'
-    }
+    try:
+        session.begin()
+        resp = item.update(d)
+        session.commit()
+        if resp is None:
+            return ApiResponseModel(ApiCodeEnum.ERROR, message='更新失败,或者已经被更新过了')
+    except BaseException as e:
+        print(e)
+        session.rollback()
+        return ApiResponseModel(ApiCodeEnum.SERVER_ERR, data=e)
+    return ApiResponseModel(ApiCodeEnum.OK, data=item.one(), message='更新成功')
 
 
 @router.delete('/{type_id}')
@@ -93,20 +86,17 @@ async def delete_account_type(
 ):
     item = session.query(AccountType).filter(AccountType.id == type_id)
     if item.first() is None:
-        return {
-            'code': -1,
-            'msg': '数据不存在'
-        }
-        pass
-    session.begin()
-    res = item.delete()
-    session.commit()
-    if not res:
-        return {
-            'code': -1,
-            'msg': '删除失败'
-        }
-    return {
-        'code': 0,
-        'msg': '删除成功'
-    }
+        return ApiResponseModel(ApiCodeEnum.DATA_NOT_EXIST)
+
+    try:
+        session.begin()
+        res = item.delete()
+        session.commit()
+        if not res:
+            return ApiResponseModel(ApiCodeEnum.ERROR, message='删除失败')
+        return ApiResponseModel(ApiCodeEnum.ERROR,data=e, message='删除成功')
+    except BaseException as e:
+        session.rollback()
+        print(e)
+        return ApiResponseModel(ApiCodeEnum.SERVER_ERR,data=e)
+

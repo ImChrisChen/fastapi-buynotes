@@ -7,7 +7,9 @@ class ApiCodeEnum(Enum):
 
     OK = (0, '成功')
     ERROR = (-1, '错误')
-    # NOT_EXIST = (10010, '数据不存在')
+
+    DATA_NOT_EXIST = (10010, '数据不存在')
+    DATA_EXIST = (10020, '数据已存在')
 
     SERVER_ERR = (500, '服务器异常')
 
@@ -47,11 +49,15 @@ class ApiResponseModel:
     msg: str
     data: Any = {}
 
-    def __init__(self, status: ApiCodeEnum, data=None):
+    def __init__(self, status: ApiCodeEnum, data=None, message=None):
+        code, msg = status.value
+
         if data is None:
             data = {}
 
-        code, msg = status.value
+        if message is not None:
+            msg = message
+
         self.code = code
-        self.msg = msg
         self.data = data
+        self.msg = msg
